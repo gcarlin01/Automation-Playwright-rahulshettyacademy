@@ -1,1 +1,1 @@
-# Automation-practice-playwright
+# Automation-Playwright-rahulshettyacademy
