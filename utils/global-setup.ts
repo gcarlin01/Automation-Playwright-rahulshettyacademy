@@ -1,21 +1,34 @@
-import { chromium, FullConfig } from '@playwright/test';
+import { chromium, FullConfig, Page } from '@playwright/test';
+import { usersLoginData } from './usersLoginData';
 
 async function globalSetup(config: FullConfig) {
+  // Function to login and save state
+  const loginAndSaveState = async (page: Page, userData: { email: string, password: string }, stateFileName: string) => {
+    await page.goto('https://rahulshettyacademy.com/client');
+
+    // login
+    await page.locator("#userEmail").fill(userData.email);
+    await page.locator("#userPassword").fill(userData.password);
+    await page.locator("[value='Login']").click();
+    await page.waitForLoadState('networkidle');
+
+    // save signed-in state
+    await page.context().storageState({ path: `loggedInState${stateFileName}.json` });
+  };
+
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  // Navigating to login page and save the state as 'notLoggedInState.json'
-  await page.goto('https://rahulshettyacademy.com/client')
-  await page.context().storageState({ path: 'notLoggedInState.json' });
+  // Login as the first user and save state
+  await loginAndSaveState(page, usersLoginData.userOne, 'QA1');
 
-  // login
-  await page.locator("#userEmail").fill("QA@tester.com");
-  await page.locator("#userPassword").fill("Qa123456$");
-  await page.locator("[value='Login']").click();
-  await page.waitForLoadState('networkidle');
+  // Create a new page for the second user
+  const pageForSecondUser = await browser.newPage();
 
-  // save signed-in state to 'loggedInState.json'
-  await page.context().storageState({ path: 'loggedInState.json' });
+  // Login as the second user and save state
+  await loginAndSaveState(pageForSecondUser, usersLoginData.userTwo, 'QA2');
+
+  // Close the browser
   await browser.close();
 }
 

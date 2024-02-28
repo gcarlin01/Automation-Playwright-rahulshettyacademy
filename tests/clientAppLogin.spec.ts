@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { usersLoginData } from '../utils/usersLoginData';
 
 test.describe('Client App Login page', () => {
   
-  test.use({ storageState: "notLoggedInState.json" });
+  // test.use({ storageState: "notLoggedInState.json" });
   test(' User navigates to login page and is able to log in', async ({ page }) => {
     await page.goto("https://rahulshettyacademy.com/client");
     // Expects page to have a title and a text.
@@ -11,8 +12,8 @@ test.describe('Client App Login page', () => {
     // Expects page to get redirect to login page.
     await expect (page).toHaveURL("https://rahulshettyacademy.com/client/auth/login");
     // User is able to Login to the page.
-    await page.locator("#userEmail").fill("QA@tester.com");
-    await page.locator("#userPassword").fill("Qa123456$");
+    await page.locator("#userEmail").fill(usersLoginData.userOne.email);
+    await page.locator("#userPassword").fill(usersLoginData.userOne.password);
     await page.locator("[value='Login']").click();
     await page.waitForLoadState('networkidle');
     // Expects page to get redirect to dashboard page upon successful login.
