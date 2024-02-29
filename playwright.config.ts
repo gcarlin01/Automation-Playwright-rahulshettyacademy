@@ -32,7 +32,7 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    // storageState: 'loggedInStateQA1.json'
+    // storageState: 'loggedInStateQA1.json' // This is to start all tests with the same state.
 
   },
 

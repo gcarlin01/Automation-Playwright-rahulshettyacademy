@@ -4,7 +4,7 @@ import { usersLoginData } from './usersLoginData';
 async function globalSetup(config: FullConfig) {
   // Function to login and save state
   const loginAndSaveState = async (page: Page, userData: { email: string, password: string }, stateFileName: string) => {
-    await page.goto('https://rahulshettyacademy.com/client'); // Increase timeout to 60 seconds
+    await page.goto('https://rahulshettyacademy.com/client'); 
 
     // login
     await page.locator("#userEmail").fill(userData.email);
