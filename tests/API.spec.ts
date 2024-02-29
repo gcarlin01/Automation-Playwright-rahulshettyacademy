@@ -7,6 +7,7 @@ import { faker } from '@faker-js/faker'
 let token: string;
 let userId: string;
 let zaraCoatProductId: string;
+let zaraCoatName: string;
 let orderId: string;
 const baseUrl = "https://rahulshettyacademy.com";
 const loginPayLoad = {userEmail: usersLoginData.userOne.email, userPassword: usersLoginData.userOne.password};
@@ -44,6 +45,7 @@ test.describe("API Tests", () => {
     expect(result.status()).toBe(200);
     const resultBody = await result.json();
     expect(resultBody.data[0].productName).toBe('ZARA COAT 3')
+    zaraCoatName = (resultBody.data[0].productName);
     zaraCoatProductId = (resultBody.data[0]._id);
     expect(resultBody.message).toBe('All Products fetched Successfully')
    
@@ -57,13 +59,14 @@ test.describe("API Tests", () => {
     await page.goto("https://rahulshettyacademy.com/client");
   });
 
-  test (`GET api/ecom/user/get-cart-count/${userId} and POST /api/ecom/user/add-to-cart`, async ({request}) => {
+  test (`GET {api/ecom/user/get-cart-count/${userId}}, POST {/api/ecom/user/add-to-cart} and DELETE {/api/ecom/user/remove-from-cart/${userId}/${zaraCoatProductId}}`, async ({request}) => {
 
     // This dummy eCommerce website intentionally resets the cart for security or user experience reasons everytime the user logs in.
     // In order to properly test these endpoints, in this same test we need to:
     // 1. Confirm that the cart is empty
     // 2. Add a product to the cart
     // 3. Confirm that the cart has that one product 
+    // 4. Remove the product from the cart
     
     const response = await request.get(`${baseUrl}/api/ecom/user/get-cart-count/${userId}`,
     {
@@ -85,7 +88,7 @@ test.describe("API Tests", () => {
         "product": {
 
           "_id": zaraCoatProductId,
-          "productName": "ZARA COAT 3",
+          "productName": zaraCoatName,
           "productCategory": "fashion",
           "productSubCategory": "shirts",
           "productPrice": 31500,
@@ -109,7 +112,7 @@ test.describe("API Tests", () => {
     const resultBody = await result.json();
     expect(resultBody.message).toBe('Product Added To Cart')
 
-    const responseWithProduct = await request.get(`${baseUrl}/api/ecom/user/get-cart-count/${userId}`,
+    const responseWithProduct = await request.get(`${baseUrl}/api/ecom/user/get-cart-products/${userId}`,
     {
       headers: {
         'Authorization': token,
@@ -118,8 +121,21 @@ test.describe("API Tests", () => {
     })
     expect(responseWithProduct.status()).toBe(200);
     const responseWithProductBody = await responseWithProduct.json();
+    expect(responseWithProductBody.products[0].productName).toBe(zaraCoatName);
+    expect(responseWithProductBody.products[0]._id).toBe(zaraCoatProductId);
     expect(responseWithProductBody.count).toBe(1)
     expect(responseWithProductBody.message).toBe('Cart Data Found')
+
+    const deleteResult = await request.delete(`${baseUrl}/api/ecom/user/remove-from-cart/${userId}/${zaraCoatProductId}`,
+    {
+      headers: {
+        'Authorization': token,
+        'Content-Type': "application/json"
+      }
+    })
+    expect(deleteResult.status()).toBe(200);
+    const deleteResultBody = await deleteResult.json();
+    expect(deleteResultBody.message).toBe("Product Removed from cart")
   })
   
   test (`POST {/api/ecom/order/create-order}, GET {/api/ecom/order/get-orders-for-customer/${userId}} and DELETE {/api/ecom/order/delete-order/${orderId}}`, async ({request}) => {
@@ -151,7 +167,7 @@ test.describe("API Tests", () => {
     expect(resultBody.data[0]._id).toBe(orderId);
     expect(resultBody.data[0].orderById).toBe(userId);
     expect(resultBody.data[0].orderBy).toBe(usersLoginData.userOne.email);
-    expect(resultBody.data[0].productName).toBe('ZARA COAT 3');
+    expect(resultBody.data[0].productName).toBe(zaraCoatName);
     expect(resultBody.message).toBe("Orders fetched for customer Successfully")
 
     const deleteResult = await request.delete(`${baseUrl}/api/ecom/order/delete-order/${orderId}`,
