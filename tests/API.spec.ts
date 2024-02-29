@@ -1,37 +1,30 @@
 import {test, expect, request} from '@playwright/test';
 import {usersLoginData} from '../utils/usersLoginData';
+import { faker } from '@faker-js/faker'
+
 
 
 let token: string;
 let userId: string;
 let zaraCoatProductId: string;
 const baseUrl = "https://rahulshettyacademy.com";
-const payLoad = {userEmail: usersLoginData.userOne.email, userPassword: usersLoginData.userOne.password}
+const loginPayLoad = {userEmail: usersLoginData.userOne.email, userPassword: usersLoginData.userOne.password};
+
 
 test.describe("API Tests", () => {
 
-  test.beforeAll("POST /api/ecom/auth/login ", async ({request}) => {
+  test.beforeAll("POST /api/ecom/auth/login and POST /api/ecom/product/get-all-products", async ({request}) => {
     const response = await request.post(`${baseUrl}/api/ecom/auth/login`, 
     {
-      data: payLoad
-    } );
+      data: loginPayLoad   
+    });
+
     expect(response.status()).toBe(200);
     const responseBody = await response.json();
     userId = responseBody.userId;
     token = responseBody.token;
-   
-  });
-  test ("Logs in using previously created token", async ({page}) => 
-  {
-    await page.addInitScript(value => {
-      window.localStorage.setItem('token',value);
-    }, token);
-    // If auth is passed through cookies use this example: await context.addCookies([{name:"csrftoken", value: "mytokenvalue123", url: "your.application.url"}]);
-    await page.goto("https://rahulshettyacademy.com/client");
-  });
 
-  test ("POST /api/ecom/product/get-all-products ", async ({request}) => {
-    const response = await request.post(`${baseUrl}/api/ecom/product/get-all-products`,
+    const result = await request.post(`${baseUrl}/api/ecom/product/get-all-products`,
     {
       data: {
         "productName": "",
@@ -47,20 +40,30 @@ test.describe("API Tests", () => {
         'Content-Type': "application/json"
       }
     })
-    expect(response.status()).toBe(200);
-    const responseBody = await response.json();
-    expect(responseBody.data[0].productName).toBe('ZARA COAT 3')
-    zaraCoatProductId = responseBody.data[0]._id;
-    expect(responseBody.message).toBe('All Products fetched Successfully')
-  })
+    expect(result.status()).toBe(200);
+    const resultBody = await result.json();
+    expect(resultBody.data[0].productName).toBe('ZARA COAT 3')
+    zaraCoatProductId = (resultBody.data[0]._id);
+    expect(resultBody.message).toBe('All Products fetched Successfully')
+   
+  });
+  test ("Logs in using previously created token", async ({page}) => 
+  {
+    await page.addInitScript(value => {
+      window.localStorage.setItem('token',value);
+    }, token);
+    // If auth is passed through cookies use this example: await context.addCookies([{name:"csrftoken", value: "mytokenvalue123", url: "your.application.url"}]);
+    await page.goto("https://rahulshettyacademy.com/client");
+  });
 
   test (`GET api/ecom/user/get-cart-count/${userId} and POST /api/ecom/user/add-to-cart`, async ({request}) => {
+
     // This dummy eCommerce website intentionally resets the cart for security or user experience reasons everytime the user logs in.
     // In order to properly test these endpoints, in this same test we need to:
     // 1. Confirm that the cart is empty
     // 2. Add a product to the cart
     // 3. Confirm that the cart has that one product 
-  
+    
     const response = await request.get(`${baseUrl}/api/ecom/user/get-cart-count/${userId}`,
     {
       headers: {
@@ -118,5 +121,21 @@ test.describe("API Tests", () => {
     expect(responseWithProductBody.message).toBe('Cart Data Found')
   })
   
-
+  test ("POST /api/ecom/order/create-order", async ({request}) => {
+    const orderPayLoad = {orders:[{country:faker.location.country(),productOrderedId:zaraCoatProductId}]};
+    const response = await request.post(`${baseUrl}/api/ecom/order/create-order`,
+    {
+      data: orderPayLoad,
+      headers: {
+        'Authorization': token,
+        'Content-Type': "application/json"
+      }
+    })
+    
+    expect(response.status()).toBe(201);
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe('Order Placed Successfully')
+    expect(responseBody.productOrderId).toEqual([zaraCoatProductId])
+    console.log(...responseBody.orders)
+  })
 });

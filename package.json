@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/gcarlin01/Automation-Playwright-rahulshettyacademy#readme",
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@playwright/test": "^1.41.2",
     "@types/node": "^20.11.20"
   }
