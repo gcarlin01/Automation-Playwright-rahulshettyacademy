@@ -4,7 +4,7 @@ import { usersLoginData } from './usersLoginData';
 async function globalSetup(config: FullConfig) {
   // Function to login and save state
   const loginAndSaveState = async (page: Page, userData: { email: string, password: string }, stateFileName: string) => {
-    await page.goto('https://rahulshettyacademy.com/client');
+    await page.goto('https://rahulshettyacademy.com/client'); // Increase timeout to 60 seconds
 
     // login
     await page.locator("#userEmail").fill(userData.email);
@@ -18,6 +18,7 @@ async function globalSetup(config: FullConfig) {
 
   const browser = await chromium.launch();
   const page = await browser.newPage();
+
 
   // Login as the first user and save state
   await loginAndSaveState(page, usersLoginData.userOne, 'QA1');
