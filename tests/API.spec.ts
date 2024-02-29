@@ -152,7 +152,6 @@ test.describe("API Tests", () => {
     expect(resultBody.data[0].orderById).toBe(userId);
     expect(resultBody.data[0].orderBy).toBe(usersLoginData.userOne.email);
     expect(resultBody.data[0].productName).toBe('ZARA COAT 3');
-    console.log(resultBody);
     expect(resultBody.message).toBe("Orders fetched for customer Successfully")
 
     const deleteResult = await request.delete(`${baseUrl}/api/ecom/order/delete-order/${orderId}`,
