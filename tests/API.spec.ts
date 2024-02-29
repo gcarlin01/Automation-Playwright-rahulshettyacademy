@@ -7,6 +7,7 @@ import { faker } from '@faker-js/faker'
 let token: string;
 let userId: string;
 let zaraCoatProductId: string;
+let orderId: string;
 const baseUrl = "https://rahulshettyacademy.com";
 const loginPayLoad = {userEmail: usersLoginData.userOne.email, userPassword: usersLoginData.userOne.password};
 
@@ -121,7 +122,7 @@ test.describe("API Tests", () => {
     expect(responseWithProductBody.message).toBe('Cart Data Found')
   })
   
-  test ("POST /api/ecom/order/create-order", async ({request}) => {
+  test (`POST {/api/ecom/order/create-order}, GET {/api/ecom/order/get-orders-for-customer/${userId}} and DELETE {/api/ecom/order/delete-order/${orderId}}`, async ({request}) => {
     const orderPayLoad = {orders:[{country:faker.location.country(),productOrderedId:zaraCoatProductId}]};
     const response = await request.post(`${baseUrl}/api/ecom/order/create-order`,
     {
@@ -136,6 +137,33 @@ test.describe("API Tests", () => {
     const responseBody = await response.json();
     expect(responseBody.message).toBe('Order Placed Successfully')
     expect(responseBody.productOrderId).toEqual([zaraCoatProductId])
-    console.log(...responseBody.orders)
+    const orderId: string = responseBody.orders[0];
+    
+    const result = await request.get(`${baseUrl}/api/ecom/order/get-orders-for-customer/${userId}`,
+    {
+      headers: {
+        'Authorization': token,
+        'Content-Type': "application/json"
+      }
+    })
+    expect(result.status()).toBe(200);
+    const resultBody = await result.json();
+    expect(resultBody.data[0]._id).toBe(orderId);
+    expect(resultBody.data[0].orderById).toBe(userId);
+    expect(resultBody.data[0].orderBy).toBe(usersLoginData.userOne.email);
+    expect(resultBody.data[0].productName).toBe('ZARA COAT 3');
+    console.log(resultBody);
+    expect(resultBody.message).toBe("Orders fetched for customer Successfully")
+
+    const deleteResult = await request.delete(`${baseUrl}/api/ecom/order/delete-order/${orderId}`,
+    {
+      headers: {
+        'Authorization': token,
+        'Content-Type': "application/json"
+      }
+    })
+    expect(deleteResult.status()).toBe(200);
+    const deleteResultBody = await deleteResult.json();
+    expect(deleteResultBody.message).toBe("Orders Deleted Successfully")
   })
 });
