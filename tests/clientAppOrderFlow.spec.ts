@@ -53,7 +53,6 @@ test.describe("Client App Order Flow", () => {
           break;
         }
       }
-      await page.pause();
       
       // Views order details
       const orderIdDetails = await page.locator(".col-text").textContent();
