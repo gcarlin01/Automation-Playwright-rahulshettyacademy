@@ -4,7 +4,7 @@ import { usersLoginData } from '../utils/usersLoginData';
 test.describe('Client App Login page', () => {
   
   // test.use({ storageState: "notLoggedInState.json" });
-  test(' User navigates to login page and is able to log in', async ({ page }) => {
+  test(' User is able to log in', async ({ page }) => {
     await page.goto("https://rahulshettyacademy.com/client");
     // Expects page to have a title and a text.
     await expect(page).toHaveTitle("Let's Shop");
