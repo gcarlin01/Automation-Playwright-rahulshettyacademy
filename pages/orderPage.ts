@@ -5,6 +5,7 @@ export default class OrdersPage {
   selectCountry: Locator;
   countryDropdown: Locator;
   formEmailId: Locator;
+  placeOrderButton: Locator;
   
   
   
@@ -15,6 +16,7 @@ export default class OrdersPage {
     this.selectCountry = page.locator("[placeholder*='Country']");
     this.countryDropdown = page.locator(".ta-results");
     this.formEmailId = page.locator(".user__name [type='text']").first();
+    this.placeOrderButton = page.locator(".action__submit");
   }
 
 
@@ -34,4 +36,7 @@ export default class OrdersPage {
     return await this.formEmailId.textContent();
   }
 
+  async placeOrder() {
+    await this.placeOrderButton.click();
+  }
 }
