@@ -39,7 +39,6 @@ test.describe("Client App Order Flow", () => {
       await page.locator(".action__submit").click();
       await expect(page.locator(".hero-primary")).toHaveText(" Thankyou for the order. ");
       const orderId = await page.locator(".em-spacer-1 .ng-star-inserted").textContent();
-      console.log(orderId);
 
       // Confirms order in My Orders
       await page.locator("button[routerlink*='myorders']").click();
@@ -49,7 +48,6 @@ test.describe("Client App Order Flow", () => {
 
       for (let i = 0; i < orderRowsCount; ++i) {
         const rowOrderId = await orderRows.nth(i).locator("th").textContent();
-        console.log(rowOrderId);
         if (orderId && rowOrderId && orderId.includes(rowOrderId)) {
           await orderRows.nth(i).locator("button").first().click();
           break;
