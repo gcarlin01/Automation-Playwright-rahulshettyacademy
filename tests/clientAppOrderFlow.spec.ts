@@ -1,61 +1,57 @@
 import { test, expect } from '@playwright/test';
 import { usersLoginData } from '../utils/usersLoginData';
+import POManager from '../pages/POManager';
 
 test.describe("Client App Order Flow", () => {
   test.use({ storageState: "loggedInStateQA1.json" });
   test("User is able to place an order", async ({ page }) => {
-    await page.goto("https://rahulshettyacademy.com/client");   
-    await page.locator(".card-body b").first().waitFor();
-       const productName = "ZARA COAT 3"
-       const products = page.locator(".card-body");
-       const count = await products.count();
-       for (let i = 0; i < count; ++i) {
-        if (await products.nth(i).locator("b").textContent() === productName) {
-          //Adds to cart
-          await products.nth(i).locator("text= Add To Cart").click();
-          break;
-        }
-      }
-      await page.locator("[routerlink*='cart']").click();
-      await page.locator("div li").first().waitFor();;
-      const firstCartProductName = await page.locator("h3").nth(1).textContent()
-      expect(firstCartProductName).toBe(productName);
+    const poManager = new POManager(page);
+    const loginPage = poManager.getLoginPage();
+    await loginPage.goTo();
 
-      // Checks-out
-      await page.locator("text=Checkout").click();
-      await page.locator("[placeholder*='Country']").pressSequentially("pe");
-      const countryDropdown = await page.locator(".ta-results");
-      await countryDropdown.waitFor();
-      const countryOptionsCount = await countryDropdown.locator("button").count();
-      for (let i = 0; i < countryOptionsCount; ++i) {
-        if (await countryDropdown.locator("button").nth(i).textContent() === " Peru") {
-          await countryDropdown.locator("button").nth(i).click();
-          break;
-        }
-      }
-      expect(page.locator(".user__name [type='text']").first()).toHaveText(usersLoginData.userOne.email);
+    // Redirects to Dashboard
+    const dashboardPage = poManager.getDashboardPage();
+    const productName = "ZARA COAT 3"
 
-      // Places order
-      await page.locator(".action__submit").click();
-      await expect(page.locator(".hero-primary")).toHaveText(" Thankyou for the order. ");
-      const orderId = await page.locator(".em-spacer-1 .ng-star-inserted").textContent();
+    // Searches and adds product to cart
+    await dashboardPage.searchAndAddToCart(productName);
 
-      // Confirms order in My Orders
-      await page.locator("button[routerlink*='myorders']").click();
-      await page.locator("tbody").waitFor();
-      const orderRows = await page.locator("tbody tr");
-      const orderRowsCount = await orderRows.count();
+    // Goes to cart
+    await dashboardPage.goToCart();
+    const cartPage = poManager.getCartPage();
 
-      for (let i = 0; i < orderRowsCount; ++i) {
-        const rowOrderId = await orderRows.nth(i).locator("th").textContent();
-        if (orderId && rowOrderId && orderId.includes(rowOrderId)) {
-          await orderRows.nth(i).locator("button").first().click();
-          break;
-        }
-      }
+    // Checks if product is displayed in cart
+    expect(await cartPage.checkIfProductIsDisplayed(productName)).toBeTruthy();
+    await cartPage.goToCheckout();
+
+    // Checks-out
+    const orderPage = poManager.getOrderPage();
+
+    // Fills form
+    // Country is selected from dropdown
+    await orderPage.searchCountryAndSelect("pe");
+
+    // Checks that email is pre-filled
+    expect(await orderPage.getFormEmailId()).toBe(usersLoginData.userOne.email);
+    
+    // Places order
+    await orderPage.placeOrder();
+
+    // Gets to "thankyou" page
+    const thanksPage = poManager.getThanksPage();
+    expect (await thanksPage.getThanksMessage()).toContain("Thankyou for the order.");
+    const orderId = await thanksPage.getOrderId()?? "";
+    
+    // Navigates to My Orders
+    await dashboardPage.goToMyOrders();
+
+    // Confirms orderID and goes into view order details
+    const myOrdersPage = poManager.getMyOrdersPage();
+    await myOrdersPage.searchOrderAndClickOnViewDetails(orderId);
       
-      // Views order details
-      const orderIdDetails = await page.locator(".col-text").textContent();
-      expect(orderId).toContain(orderIdDetails);
+    // Views and confirms orderId in order details
+    const orderDetailsPage = poManager.getOrdersDetailsPage();
+    const orderIdDetails = await orderDetailsPage.getOrderId();
+    expect(orderId).toContain(orderIdDetails);
   })
 });

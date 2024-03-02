@@ -38,5 +38,6 @@ export default class OrdersPage {
 
   async placeOrder() {
     await this.placeOrderButton.click();
+    await this.page.locator(".hero-primary").waitFor();
   }
 }
