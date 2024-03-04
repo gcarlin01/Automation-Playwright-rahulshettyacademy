@@ -3,7 +3,7 @@ import { usersLoginData } from '../utils/usersLoginData';
 import POManager from '../pages/POManager';
 import productsDataset from '../utils/productsDataset';
 
-for (const product of productsDataset) {
+productsDataset.forEach((product) => {
   test.describe("Client App Order Flow", () => {
     test.use({ storageState: "loggedInStateQA1.json" });
     test(`User is able to place an order for ${product.productName}`, async ({ page }) => {
@@ -56,4 +56,4 @@ for (const product of productsDataset) {
       expect(orderId).toContain(orderIdDetails);
     })
   })
-};
+});
