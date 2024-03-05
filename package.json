@@ -24,7 +24,8 @@
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
     "@playwright/test": "^1.41.2",
-    "@types/node": "^20.11.20"
+    "@types/node": "^20.11.20",
+    "playwright-slack-report": "^1.1.72"
   },
   "dependencies": {
     "@axe-core/playwright": "^4.8.5"
