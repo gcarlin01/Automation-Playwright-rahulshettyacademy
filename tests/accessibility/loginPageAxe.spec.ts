@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 
 // Automated accessibility tests can detect some common accessibility problems such as missing or invalid properties. But many accessibility problems can only be discovered through manual testing. It is recommended using a combination of automated testing, manual accessibility assessments, and inclusive user testing. For manual assessments, it is recommended Accessibility Insights for Web, a free and open source dev tool that walks you through assessing a website for WCAG 2.1 AA coverage.
-test.describe('Accessibility tests on Login page', () => {
+test.describe('Accessibility tests on Login page @accessibility', () => {
   test('Login page should not have any automatically detectable WCAG accessibility issues', async ({ page }) => {
     await page.goto('https://rahulshettyacademy.com/client');
     await page.locator("[value='Login']").waitFor();

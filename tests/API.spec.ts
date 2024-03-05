@@ -13,7 +13,7 @@ const baseUrl = "https://rahulshettyacademy.com";
 const loginPayLoad = {userEmail: usersLoginData.userOne.email, userPassword: usersLoginData.userOne.password};
 
 
-test.describe("API Tests", () => {
+test.describe("API Tests @API", () => {
 
   test.beforeAll("POST /api/ecom/auth/login and POST /api/ecom/product/get-all-products", async ({request}) => {
     const response = await request.post(`${baseUrl}/api/ecom/auth/login`, 

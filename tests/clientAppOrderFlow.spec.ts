@@ -4,7 +4,7 @@ import POManager from '../pages/POManager';
 import productsDataset from '../utils/productsDataset';
 
 productsDataset.forEach((product) => {
-  test.describe("Client App Order Flow", () => {
+  test.describe.serial("Client App Order Flow @regression", () => {
     test.use({ storageState: "loggedInStateQA1.json" });
     test(`User is able to place an order for ${product.productName}`, async ({ page }) => {
       const poManager = new POManager(page);

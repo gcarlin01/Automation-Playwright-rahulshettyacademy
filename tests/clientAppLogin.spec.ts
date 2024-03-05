@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { usersLoginData } from '../utils/usersLoginData';
 import POManager from '../pages/POManager';
 
-test.describe('Client App Login page', () => {
+test.describe('Client App Login page @smoke', () => {
   
   // test.use({ storageState: "notLoggedInState.json" });
   test(' User is able to log in', async ({ page }) => {
