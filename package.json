@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "auto-commit": "bash ./scripts/git_auto_commit.sh",
     "reg": "npx playwright test --grep @regression --workers 1",
     "smoke": "npx playwright test --grep @smoke",
     "API": "npx playwright test --grep @API",
