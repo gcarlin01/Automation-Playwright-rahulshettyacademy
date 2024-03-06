@@ -1,53 +1,69 @@
 import {test, expect, request} from '@playwright/test';
 import {usersLoginData} from '../utils/usersLoginData';
 import { faker } from '@faker-js/faker'
-
+import {ApiUtils}  from '../utils/apiUtils';
 
 
 let token: string;
-let userId: string;
 let zaraCoatProductId: string;
 let zaraCoatName: string;
+let userId: string;
 let orderId: string;
 const baseUrl = "https://rahulshettyacademy.com";
-const loginPayLoad = {userEmail: usersLoginData.userOne.email, userPassword: usersLoginData.userOne.password};
+// const loginPayLoad = {userEmail: usersLoginData.userOne.email, userPassword: usersLoginData.userOne.password};
 
 
 test.describe("API Tests @API", () => {
+  
 
   test.beforeAll("POST /api/ecom/auth/login and POST /api/ecom/product/get-all-products", async ({request}) => {
-    const response = await request.post(`${baseUrl}/api/ecom/auth/login`, 
-    {
-      data: loginPayLoad   
-    });
+    const apiUtils = new ApiUtils(request, baseUrl);
+    const {status, body, token: newToken, userId: newUserId} = await apiUtils.loginAndGetToken();
+    token = newToken
+    userId = newUserId;
+    expect(status).toBe(200);
+    expect(body.message).toBe('Login Successfully');
 
-    expect(response.status()).toBe(200);
-    const responseBody = await response.json();
-    userId = responseBody.userId;
-    token = responseBody.token;
+    const { status: status2, body: body2, zaraCoatName: newZaraCoatName, zaraCoatProductId: newZaraCoatId} = await apiUtils.getAllProducts(token);
+    zaraCoatName = newZaraCoatName;
+    zaraCoatProductId = newZaraCoatId;
+    expect(status2).toBe(200);
+    expect(body2.data[0].productName).toBe('ZARA COAT 3');
+    expect(body2.message).toBe('All Products fetched Successfully');
+    
 
-    const result = await request.post(`${baseUrl}/api/ecom/product/get-all-products`,
-    {
-      data: {
-        "productName": "",
-        "minPrice": null,
-        "maxPrice": null,
-        "productCategory": [],
-        "productSubCategory": [],
-        "productFor": []
-      },
+  //   const response = await request.post(`${baseUrl}/api/ecom/auth/login`, 
+  //   {
+  //     data: loginPayLoad   
+  //   });
+
+  //   expect(response.status()).toBe(200);
+  //   const responseBody = await response.json();
+  //   userId = responseBody.userId;
+  //   token = responseBody.token;
+
+  //   const result = await request.post(`${baseUrl}/api/ecom/product/get-all-products`,
+  //   {
+  //     data: {
+  //       "productName": "",
+  //       "minPrice": null,
+  //       "maxPrice": null,
+  //       "productCategory": [],
+  //       "productSubCategory": [],
+  //       "productFor": []
+  //     },
       
-      headers: {
-        'Authorization': token,
-        'Content-Type': "application/json"
-      }
-    })
-    expect(result.status()).toBe(200);
-    const resultBody = await result.json();
-    expect(resultBody.data[0].productName).toBe('ZARA COAT 3')
-    zaraCoatName = (resultBody.data[0].productName);
-    zaraCoatProductId = (resultBody.data[0]._id);
-    expect(resultBody.message).toBe('All Products fetched Successfully')
+  //     headers: {
+  //       'Authorization': token,
+  //       'Content-Type': "application/json"
+  //     }
+  //   })
+  //   expect(result.status()).toBe(200);
+  //   const resultBody = await result.json();
+  //   expect(resultBody.data[0].productName).toBe('ZARA COAT 3')
+  //   zaraCoatName = (resultBody.data[0].productName);
+  //   zaraCoatProductId = (resultBody.data[0]._id);
+  //   expect(resultBody.message).toBe('All Products fetched Successfully')
    
   });
   test ("Logs in using previously created token", async ({page}) => 
@@ -57,6 +73,8 @@ test.describe("API Tests @API", () => {
     }, token);
     // If auth is passed through cookies use this example: await context.addCookies([{name:"csrftoken", value: "mytokenvalue123", url: "your.application.url"}]);
     await page.goto("https://rahulshettyacademy.com/client");
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL("https://rahulshettyacademy.com/client/dashboard/dash");
   });
 
   test (`GET {api/ecom/user/get-cart-count/${userId}}, POST {/api/ecom/user/add-to-cart} and DELETE {/api/ecom/user/remove-from-cart/${userId}/${zaraCoatProductId}}`, async ({request}) => {
