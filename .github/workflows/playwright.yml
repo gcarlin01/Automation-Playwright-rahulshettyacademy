@@ -19,6 +19,17 @@ jobs:
         run: npx playwright install --with-deps
       - name: Run Playwright regresion tests
         run: npx playwright test --grep @regression --workers 1
+
+      - name: Notify Slack Always
+        if: always()
+        run: |
+          SLACK_MESSAGE=":x: Playwright tests failed on branch \`$GITHUB_REF\` by $GITHUB_ACTOR. Workflow run: $GITHUB_RUN_URL"
+          echo "Sending Slack message: $SLACK_MESSAGE"
+          curl -v -X POST -H 'Content-type: application/json' --data "{
+            \"text\": \"${SLACK_MESSAGE}\",
+            \"channel\": \"${{ secrets.SLACK_CHANNEL }}\"
+          }" https://slack.com/api/chat.postMessage?token=${{ secrets.SLACK_TOKEN }}&pretty=1
+
       - uses: actions/upload-artifact@v3
         if: always()
         with:
