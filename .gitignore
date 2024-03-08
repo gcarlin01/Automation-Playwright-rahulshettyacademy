@@ -3,5 +3,5 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-/loggedInStateQA1.json/
-/loggedInStateQA2.json/
+/loggedInStateQA1.json
+/loggedInStateQA2.json
