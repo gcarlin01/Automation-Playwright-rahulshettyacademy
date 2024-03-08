@@ -47,7 +47,7 @@ await page.locator("button[routerlink*='myorders']").click();
 
 });
 
-test ("Intercepts call and fakes request rerouting call to get other user order details", async ({page}) => {
+test ("Intercepts call and fakes request rerouting call to try and get other user order details", async ({page}) => {
   await page.addInitScript(value => {
     window.localStorage.setItem('token',value);
   }, token);
