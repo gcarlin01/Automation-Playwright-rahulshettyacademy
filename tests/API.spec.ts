@@ -1,4 +1,4 @@
-import {test, expect, request} from '@playwright/test';
+import {test, expect} from '@playwright/test';
 import {usersLoginData} from '../utils/usersLoginData';
 import { faker } from '@faker-js/faker'
 import {ApiUtils}  from '../utils/apiUtils';
@@ -85,7 +85,7 @@ test.describe("API Tests @API", () => {
     expect(response.status).toBe(201);
     expect(response.body.message).toBe('Order Placed Successfully');
     expect(response.body.productOrderId).toEqual([firstProductInDataset.productId]);
-    const orderId: string = response.body.orders[0];
+    const orderId = response.orderId;
 
     // Gets orders for customer and confirms previous order is there
     const result = await apiUtils.getOrdersForCustomer(token, userId);

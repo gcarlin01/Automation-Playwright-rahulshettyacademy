@@ -137,9 +137,12 @@ export class ApiUtils {
       }
     })
     const responseBody = await response.json();
+    const orderId: string = responseBody.orders[0];
     return {
       status: response.status(),
-      body: responseBody};
+      body: responseBody,
+      orderId};
+     
   }
 
   async getOrdersForCustomer(token: string, userId: string) {
