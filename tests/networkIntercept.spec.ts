@@ -47,7 +47,7 @@ await page.locator("button[routerlink*='myorders']").click();
 
 });
 
-test ("Intercepts call and fakes request rerouting call to try and get other user order details", async ({page}) => {
+test ("Intercepts call and fakes request rerouting call to try and get other user order details", async ({page, request}) => {
   await page.addInitScript(value => {
     window.localStorage.setItem('token',value);
   }, token);
@@ -67,4 +67,10 @@ test ("Intercepts call and fakes request rerouting call to try and get other use
   await expect(page.locator("p").last()).toHaveText(
     "You are not authorize to view this order"
   );
+
+  // clean up
+  const apiUtils = new ApiUtils(request, baseUrl);
+  const deleteResult = await apiUtils.deleteOrder(token, orderId);
+  expect(deleteResult.status).toBe(200);
+  expect(deleteResult.body.message).toBe("Orders Deleted Successfully")
 });
