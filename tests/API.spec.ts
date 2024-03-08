@@ -2,70 +2,28 @@ import {test, expect, request} from '@playwright/test';
 import {usersLoginData} from '../utils/usersLoginData';
 import { faker } from '@faker-js/faker'
 import {ApiUtils}  from '../utils/apiUtils';
+import productsDataset from '../utils/productsDataset';
 
-
+const firstProductInDataset = productsDataset[0]; // ZARA COAT 3
 let token: string;
-let zaraCoatProductId: string;
-let zaraCoatName: string;
 let userId: string;
 let orderId: string;
 const baseUrl = "https://rahulshettyacademy.com";
-// const loginPayLoad = {userEmail: usersLoginData.userOne.email, userPassword: usersLoginData.userOne.password};
 
 
 test.describe("API Tests @API", () => {
   
 
-  test.beforeAll("POST /api/ecom/auth/login and POST /api/ecom/product/get-all-products", async ({request}) => {
+  test.beforeAll("POST /api/ecom/auth/login", async ({request}) => {
     const apiUtils = new ApiUtils(request, baseUrl);
-    const {status, body, token: newToken, userId: newUserId} = await apiUtils.loginAndGetToken();
-    token = newToken
-    userId = newUserId;
-    expect(status).toBe(200);
-    expect(body.message).toBe('Login Successfully');
+    const response = await apiUtils.loginAndGetToken();
+    token = response.token
+    userId = response.userId
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe('Login Successfully');
 
-    const { status: status2, body: body2, zaraCoatName: newZaraCoatName, zaraCoatProductId: newZaraCoatId} = await apiUtils.getAllProducts(token);
-    zaraCoatName = newZaraCoatName;
-    zaraCoatProductId = newZaraCoatId;
-    expect(status2).toBe(200);
-    expect(body2.data[0].productName).toBe('ZARA COAT 3');
-    expect(body2.message).toBe('All Products fetched Successfully');
-    
-
-  //   const response = await request.post(`${baseUrl}/api/ecom/auth/login`, 
-  //   {
-  //     data: loginPayLoad   
-  //   });
-
-  //   expect(response.status()).toBe(200);
-  //   const responseBody = await response.json();
-  //   userId = responseBody.userId;
-  //   token = responseBody.token;
-
-  //   const result = await request.post(`${baseUrl}/api/ecom/product/get-all-products`,
-  //   {
-  //     data: {
-  //       "productName": "",
-  //       "minPrice": null,
-  //       "maxPrice": null,
-  //       "productCategory": [],
-  //       "productSubCategory": [],
-  //       "productFor": []
-  //     },
-      
-  //     headers: {
-  //       'Authorization': token,
-  //       'Content-Type': "application/json"
-  //     }
-  //   })
-  //   expect(result.status()).toBe(200);
-  //   const resultBody = await result.json();
-  //   expect(resultBody.data[0].productName).toBe('ZARA COAT 3')
-  //   zaraCoatName = (resultBody.data[0].productName);
-  //   zaraCoatProductId = (resultBody.data[0]._id);
-  //   expect(resultBody.message).toBe('All Products fetched Successfully')
-   
   });
+ 
   test ("Logs in using previously created token", async ({page}) => 
   {
     await page.addInitScript(value => {
@@ -77,7 +35,16 @@ test.describe("API Tests @API", () => {
     await expect(page).toHaveURL("https://rahulshettyacademy.com/client/dashboard/dash");
   });
 
-  test (`GET {api/ecom/user/get-cart-count/${userId}}, POST {/api/ecom/user/add-to-cart} and DELETE {/api/ecom/user/remove-from-cart/${userId}/${zaraCoatProductId}}`, async ({request}) => {
+  test ("POST /api/ecom/product/get-all-products", async ({request}) => {
+    const apiUtils = new ApiUtils(request, baseUrl);
+    const response = await apiUtils.getAllProducts(token);
+    expect(response.status).toBe(200);
+    expect(response.body.data[0].productName).toBe(firstProductInDataset.productName);
+    expect(response.body.message).toBe('All Products fetched Successfully');
+    
+  });
+
+  test (`GET {api/ecom/user/get-cart-count/${userId}}, POST {/api/ecom/user/add-to-cart} and DELETE {/api/ecom/user/remove-from-cart/${userId}/${firstProductInDataset.productId}}`, async ({request}) => {
 
     // This dummy eCommerce website intentionally resets the cart for security or user experience reasons everytime the user logs in.
     // In order to properly test these endpoints, in this same test we need to:
@@ -85,118 +52,54 @@ test.describe("API Tests @API", () => {
     // 2. Add a product to the cart
     // 3. Confirm that the cart has that one product 
     // 4. Remove the product from the cart
+
+    // 1. Confirm that the cart is empty
+    const apiUtils = new ApiUtils(request, baseUrl);
+    const response = await apiUtils.getCartCount(token, userId);
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe('No Product in Cart')
+
+    // 2. Add a product to the cart
+    const result = await apiUtils.addProductToCart(token, userId, firstProductInDataset.productId, firstProductInDataset.productName);
+    expect(result.status).toBe(200);
+    expect(result.body.message).toBe('Product Added To Cart')
     
-    const response = await request.get(`${baseUrl}/api/ecom/user/get-cart-count/${userId}`,
-    {
-      headers: {
-        'Authorization': token,
-        'Content-Type': "application/json"
-      }
-    })
-    expect(response.status()).toBe(200);
-    const responseBody = await response.json();
-    expect(responseBody.message).toBe('No Product in Cart')
+    // 3. Confirm that the cart has that one product
+    const responseWithProduct = await apiUtils.getCartProducts(token, userId);
+    expect (responseWithProduct.status).toBe(200);
+    expect(responseWithProduct.body.products[0].productName).toBe(firstProductInDataset.productName);
+    expect(responseWithProduct.body.products[0]._id).toBe(firstProductInDataset.productId);
+    expect(responseWithProduct.body.count).toBe(1)
+    expect(responseWithProduct.body.message).toBe('Cart Data Found')
 
-    const result = await request.post(`${baseUrl}/api/ecom/user/add-to-cart`,
-    {
-      data: {
-
-        "_id": userId,
-
-        "product": {
-
-          "_id": zaraCoatProductId,
-          "productName": zaraCoatName,
-          "productCategory": "fashion",
-          "productSubCategory": "shirts",
-          "productPrice": 31500,
-          "productDescription": "Zara coat for Women and girls",
-          "productImage": "https://rahulshettyacademy.com/api/ecom/uploads/productImage_1650649434146.jpeg",
-          "productRating": "0",
-          "productTotalOrders": "0",
-          "productStatus": true,
-          "productFor": "women",
-          "productAddedBy": "admin@gmail.com",
-          "__v": 0
-          }
-      },
-      
-      headers: {
-        'Authorization': token,
-        'Content-Type': "application/json"
-      }
-    })
-    expect(result.status()).toBe(200);
-    const resultBody = await result.json();
-    expect(resultBody.message).toBe('Product Added To Cart')
-
-    const responseWithProduct = await request.get(`${baseUrl}/api/ecom/user/get-cart-products/${userId}`,
-    {
-      headers: {
-        'Authorization': token,
-        'Content-Type': "application/json"
-      }
-    })
-    expect(responseWithProduct.status()).toBe(200);
-    const responseWithProductBody = await responseWithProduct.json();
-    expect(responseWithProductBody.products[0].productName).toBe(zaraCoatName);
-    expect(responseWithProductBody.products[0]._id).toBe(zaraCoatProductId);
-    expect(responseWithProductBody.count).toBe(1)
-    expect(responseWithProductBody.message).toBe('Cart Data Found')
-
-    const deleteResult = await request.delete(`${baseUrl}/api/ecom/user/remove-from-cart/${userId}/${zaraCoatProductId}`,
-    {
-      headers: {
-        'Authorization': token,
-        'Content-Type': "application/json"
-      }
-    })
-    expect(deleteResult.status()).toBe(200);
-    const deleteResultBody = await deleteResult.json();
-    expect(deleteResultBody.message).toBe("Product Removed from cart")
+    // 4. Remove the product from the cart
+    const responseAfterDelete = await apiUtils.removeProductFromCart(token, userId, firstProductInDataset.productId);
+    expect(responseAfterDelete.status).toBe(200);
+    expect(responseAfterDelete.body.message).toBe('Product Removed from cart')
   })
   
   test (`POST {/api/ecom/order/create-order}, GET {/api/ecom/order/get-orders-for-customer/${userId}} and DELETE {/api/ecom/order/delete-order/${orderId}}`, async ({request}) => {
-    const orderPayLoad = {orders:[{country:faker.location.country(),productOrderedId:zaraCoatProductId}]};
-    const response = await request.post(`${baseUrl}/api/ecom/order/create-order`,
-    {
-      data: orderPayLoad,
-      headers: {
-        'Authorization': token,
-        'Content-Type': "application/json"
-      }
-    })
-    
-    expect(response.status()).toBe(201);
-    const responseBody = await response.json();
-    expect(responseBody.message).toBe('Order Placed Successfully')
-    expect(responseBody.productOrderId).toEqual([zaraCoatProductId])
-    const orderId: string = responseBody.orders[0];
-    
-    const result = await request.get(`${baseUrl}/api/ecom/order/get-orders-for-customer/${userId}`,
-    {
-      headers: {
-        'Authorization': token,
-        'Content-Type': "application/json"
-      }
-    })
-    expect(result.status()).toBe(200);
-    const resultBody = await result.json();
-    expect(resultBody.data[0]._id).toBe(orderId);
-    expect(resultBody.data[0].orderById).toBe(userId);
-    expect(resultBody.data[0].orderBy).toBe(usersLoginData.userOne.email);
-    expect(resultBody.data[0].productName).toBe(zaraCoatName);
-    expect(resultBody.message).toBe("Orders fetched for customer Successfully")
+    // Posts an order
+    const apiUtils = new ApiUtils(request, baseUrl);
+    const response = await apiUtils.createOrder(token, firstProductInDataset.productId, faker.location.country());
+    expect(response.status).toBe(201);
+    expect(response.body.message).toBe('Order Placed Successfully');
+    expect(response.body.productOrderId).toEqual([firstProductInDataset.productId]);
+    const orderId: string = response.body.orders[0];
 
-    const deleteResult = await request.delete(`${baseUrl}/api/ecom/order/delete-order/${orderId}`,
-    {
-      headers: {
-        'Authorization': token,
-        'Content-Type': "application/json"
-      }
-    })
-    expect(deleteResult.status()).toBe(200);
-    const deleteResultBody = await deleteResult.json();
-    expect(deleteResultBody.message).toBe("Orders Deleted Successfully")
+    // Gets orders for customer and confirms previous order is there
+    const result = await apiUtils.getOrdersForCustomer(token, userId);
+    expect(result.status).toBe(200);
+    expect(result.body.data[0]._id).toBe(orderId);
+    expect(result.body.data[0].orderById).toBe(userId);
+    expect(result.body.data[0].orderBy).toBe(usersLoginData.userOne.email);
+    expect(result.body.data[0].productName).toBe(firstProductInDataset.productName);
+    expect(result.body.message).toBe("Orders fetched for customer Successfully")
+    
+    // Deletes the order
+    const deleteResult = await apiUtils.deleteOrder(token, orderId);
+    expect(deleteResult.status).toBe(200);
+    expect(deleteResult.body.message).toBe("Orders Deleted Successfully")
+
   })
 });

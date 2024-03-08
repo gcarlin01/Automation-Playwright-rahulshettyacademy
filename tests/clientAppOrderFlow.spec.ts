@@ -4,9 +4,10 @@ import POManager from '../pages/POManager';
 import productsDataset from '../utils/productsDataset';
 
 productsDataset.forEach((product) => {
+  const productName = product.productName;
   test.describe("Client App Order Flow @regression", () => {
     test.use({ storageState: "loggedInStateQA1.json" });
-    test(`User is able to place an order for ${product.productName}`, async ({ page }) => {
+    test(`User is able to place an order for ${productName}`, async ({ page }) => {
       const poManager = new POManager(page);
       const loginPage = poManager.getLoginPage();
       await loginPage.goTo();
@@ -15,14 +16,14 @@ productsDataset.forEach((product) => {
       const dashboardPage = poManager.getDashboardPage();
 
       // Searches and adds product to cart
-      await dashboardPage.searchAndAddToCart(product.productName);
+      await dashboardPage.searchAndAddToCart(productName);
 
       // Goes to cart
       await dashboardPage.goToCart();
       const cartPage = poManager.getCartPage();
 
       // Checks if product is displayed in cart
-      expect(await cartPage.checkIfProductIsDisplayed(product.productName)).toBeTruthy();
+      expect(await cartPage.checkIfProductIsDisplayed(productName)).toBeTruthy();
       await cartPage.goToCheckout();
 
       // Checks-out
