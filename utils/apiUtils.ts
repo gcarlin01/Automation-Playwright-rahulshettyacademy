@@ -154,9 +154,12 @@ export class ApiUtils {
       }
     })
     const responseBody = await response.json();
+    const data = responseBody.data;
     return {
       status: response.status(),
-      body: responseBody};
+      body: responseBody,
+      data: data,
+    }
   }
 
   async deleteOrder(token: string, orderId: string) {
@@ -171,6 +174,16 @@ export class ApiUtils {
     return {
       status: response.status(),
       body: responseBody};
+  }
+
+  async cleanUpOrders(token: string, userId: string) {
+    const orders = await this.getOrdersForCustomer(token, userId);
+
+    for (const order of orders.data) {
+      await this.deleteOrder(token, order._id);
+      console.log(`Order deleted: ${order.productName}`);
+    }
+    console.log('All orders cleaned up successfully.');
   }
 
 }

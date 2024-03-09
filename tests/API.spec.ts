@@ -102,4 +102,9 @@ test.describe("API Tests @API", () => {
     expect(deleteResult.body.message).toBe("Orders Deleted Successfully")
 
   })
+
+  test.afterAll ("Clean up orders using API requests", async ({request}) => {
+    const apiUtils = new ApiUtils(request, baseUrl);
+    const response = await apiUtils.cleanUpOrders(token, userId);
+  });
 });

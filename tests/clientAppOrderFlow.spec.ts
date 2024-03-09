@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { usersLoginData } from '../utils/usersLoginData';
 import POManager from '../pages/POManager';
 import productsDataset from '../utils/productsDataset';
+import { ApiUtils } from '../utils/apiUtils';
 
 productsDataset.forEach((product) => {
   const productName = product.productName;
@@ -56,5 +57,14 @@ productsDataset.forEach((product) => {
       const orderIdDetails = await orderDetailsPage.getOrderId();
       expect(orderId).toContain(orderIdDetails);
     })
+
+    test.afterAll("Clean up orders using API requests", async ({ request }) => {
+      const baseUrl = "https://rahulshettyacademy.com";
+      const apiUtils = new ApiUtils(request, baseUrl);
+      const response = await apiUtils.loginAndGetToken();
+      const token = response.token;
+      const userId = response.userId;
+      await apiUtils.cleanUpOrders(token, userId);
+    });
   })
 });
