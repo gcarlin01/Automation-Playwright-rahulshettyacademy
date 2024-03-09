@@ -20,7 +20,7 @@ test.beforeAll("Logs in and creates an order", async ({request}) => {
   const result = await apiUtils.createOrder(token, secondProductInDataset.productId, faker.location.country());
   orderId = result.orderId;
 });
-test ("Intercepts call and fakes response when getting the orders for the customer", async ({page}) => {
+test ("Intercepts call and fakes response when getting the orders for the customer @networkIntercept", async ({page}) => {
   await page.addInitScript(value => {
     window.localStorage.setItem('token',value);
   }, token);
@@ -47,7 +47,7 @@ await page.locator("button[routerlink*='myorders']").click();
 
 });
 
-test ("Intercepts call and fakes request rerouting call to try and get other user order details", async ({page, request}) => {
+test ("Intercepts call and fakes request rerouting call to try and get other user order details @networkIntercept @networkSecurity", async ({page, request}) => {
   await page.addInitScript(value => {
     window.localStorage.setItem('token',value);
   }, token);

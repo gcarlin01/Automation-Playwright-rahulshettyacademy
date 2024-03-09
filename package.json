@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "auto-commit": "bash ./scripts/git_auto_commit.sh",
+    "netIntercept": "npx playwright test --grep @networkIntercept",
+    "netSec": "npx playwright test --grep @networkSecurity",
     "reg": "npx playwright test --grep @regression --workers 1",
     "smoke": "npx playwright test --grep @smoke",
     "API": "npx playwright test --grep @API",
-    "axe": "npx playwright test --grep @Accessibility"
+    "axe": "npx playwright test --grep @accessibility"
   },
   "repository": {
     "type": "git",
