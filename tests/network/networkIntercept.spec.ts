@@ -1,6 +1,6 @@
 import {test, expect} from '@playwright/test';
-import {ApiUtils}  from '../utils/apiUtils';
-import productsDataset from '../utils/productsDataset';
+import {ApiUtils}  from '../../utils/apiUtils';
+import productsDataset from '../../utils/productsDataset';
 import { faker } from '@faker-js/faker'
 
 const secondProductInDataset = productsDataset[1]; // ADIDAS ORIGINAL

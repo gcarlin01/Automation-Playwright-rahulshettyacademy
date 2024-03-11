@@ -1,8 +1,8 @@
 import {test, expect} from '@playwright/test';
-import {usersLoginData} from '../utils/usersLoginData';
+import {usersLoginData} from '../../utils/usersLoginData';
 import { faker } from '@faker-js/faker'
-import {ApiUtils}  from '../utils/apiUtils';
-import productsDataset from '../utils/productsDataset';
+import {ApiUtils}  from '../../utils/apiUtils';
+import productsDataset from '../../utils/productsDataset';
 
 const firstProductInDataset = productsDataset[0]; // ZARA COAT 3
 let token: string;

@@ -27,6 +27,9 @@
     "@faker-js/faker": "^8.4.1",
     "@playwright/test": "^1.41.2",
     "@types/node": "^20.11.20",
+    "lighthouse": "^11.6.0",
+    "playwright": "^1.42.1",
+    "playwright-lighthouse": "^4.0.0",
     "playwright-slack-report": "^1.1.72"
   },
   "dependencies": {

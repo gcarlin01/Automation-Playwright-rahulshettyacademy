@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { usersLoginData } from '../utils/usersLoginData';
-import POManager from '../pages/POManager';
-import productsDataset from '../utils/productsDataset';
-import { ApiUtils } from '../utils/apiUtils';
+import { usersLoginData } from '../../utils/usersLoginData';
+import POManager from '../../pages/POManager';
+import productsDataset from '../../utils/productsDataset';
+import { ApiUtils } from '../../utils/apiUtils';
 
 productsDataset.forEach((product) => {
   const productName = product.productName;

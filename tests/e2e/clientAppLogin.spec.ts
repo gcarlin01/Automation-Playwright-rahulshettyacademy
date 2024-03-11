@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { usersLoginData } from '../utils/usersLoginData';
-import POManager from '../pages/POManager';
+import { usersLoginData } from '../../utils/usersLoginData';
+import POManager from '../../pages/POManager';
 
 test.describe('Client App Login page @smoke', () => {
   
