@@ -4,7 +4,8 @@ import { playAudit } from 'playwright-lighthouse';
 const lighthouseDesktopConfig = require("lighthouse/lighthouse-core/config/lr-desktop-config");
 
 const baseUrl = 'https://rahulshettyacademy.com'
-test("Audits login page", async ({ playwright }) => {
+
+test("Audits landing page", async ({ playwright }) => {
   const browser = await playwright.chromium.launch({
   args: ['--remote-debugging-port=9222'],
   });
@@ -33,3 +34,5 @@ test("Audits login page", async ({ playwright }) => {
   await context.close();
   await browser.close();
 });
+
+
